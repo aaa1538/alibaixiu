@@ -40,40 +40,10 @@
             <th class="text-center" width="100">操作</th>
           </tr>
         </thead>
-        <tbody>
-          <tr class="danger">
-            <td>大大</td>
-            <td>楼主好人，顶一个</td>
-            <td>《Hello world》</td>
-            <td>2026/10/07</td>
-            <td>未批准</td>
-            <td class="text-center">
-              <a href="post-add.html" class="btn btn-info btn-xs">批准</a>
-              <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr>
-          <tr>
-            <td>大大</td>
-            <td>楼主好人，顶一个</td>
-            <td>《Hello world》</td>
-            <td>2026/10/07</td>
-            <td>已批准</td>
-            <td class="text-center">
-              <a href="post-add.html" class="btn btn-warning btn-xs">驳回</a>
-              <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr>
-          <tr>
-            <td>大大</td>
-            <td>楼主好人，顶一个</td>
-            <td>《Hello world》</td>
-            <td>2026/10/07</td>
-            <td>已批准</td>
-            <td class="text-center">
-              <a href="post-add.html" class="btn btn-warning btn-xs">驳回</a>
-              <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr>
+        <tbody id="commentList">
+
+<!--------------截取进行遍历----------------------------------------------------------------------------------------------------->
+
         </tbody>
       </table>
     </div>
@@ -118,5 +88,34 @@
 
   <script src="../assets/vendors/jquery/jquery.js"></script>
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
+  <script src="../assets/vendors/art-template/template-web.js"></script>
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/js/comments.js"></script>
+
+  <script type="text/html" id="commentBox">
+  
+  {{each records}}
+  {{if $value.state == 0}}
+  <tr class="danger">
+  {{else}}
+  <tr class="success">
+  {{/if}}
+    <td>大大</td>
+    <td>{{$value.content}}</td>
+    <td>《Hello world》</td>
+    <td>{{$imports.dateformat($value.createAt)}}</td>
+    <td>{{$value.state == 0?'未批准':'批准'}}</td>
+    <td class="text-center">
+      {{if $value.state == 0}}
+      <a href="post-add.html" class="btn btn-info btn-xs status" data-id="{{$value._id}}" data-status="{{$value.state}}">批准</a>
+      {{else}}
+      <a href="post-add.html" class="btn btn-danger btn-xs status" data-id="{{$value._id}}" data-status="{{$value.state}}">驳回</a>
+      {{/if}}
+      <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
+    </td>
+  </tr>
+  {{/each}}
+
+  </script>
 </body>
 </html>

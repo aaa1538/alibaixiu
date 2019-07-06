@@ -1,3 +1,10 @@
+<script src="/login/status"></script>
+<script>
+    if (isLogin == false) {
+        location.href = 'login.html'
+    }
+</script>
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -17,7 +24,7 @@
         <li><a href="login.html"><i class="fa fa-sign-out"></i>退出</a></li>
       </ul>
     </nav>
-    <div class="container-fluid">
+    <div class="container-fluid" id="postaddBigForm" >
       <div class="page-title">
         <h1>写文章</h1>
       </div>
@@ -25,7 +32,7 @@
       <!-- <div class="alert alert-danger">
         <strong>错误！</strong>发生XXX错误
       </div> -->
-      <form class="row" id="addForm">
+      <form class="row" id="postaddForm">
         <div class="col-md-9">
           <div class="form-group">
             <label for="title">标题</label>
@@ -40,15 +47,19 @@
           <div class="form-group">
             <label for="feature">文章封面</label>
             <!-- show when image chose -->
-            <img class="help-block thumbnail" style="display: none">
-            <input type="hidden" name="thumbnail" id="hiddenImg">
+            <img class="help-block thumbnail" style="display: none" >
             <input id="feature" class="form-control" type="file">
+
+            <input type="hidden" name="thumbnail" id="hiddenImg">
+
+            <!-- ------------------------------------------加入隐藏域-------------------------------------------------------------------- -->
           </div>
           <div class="form-group">
             <label for="category">所属分类</label>
             <select name="category" id="category" class="form-control">
               
-              
+            <!-- ---------------------------------------------截取出来遍历----------------------------------------------------------------- -->
+
             </select>
           </div>
           <div class="form-group">
@@ -57,7 +68,7 @@
           </div>
           <div class="form-group">
             <label for="status">状态</label>
-            <select id="status" class="form-control">
+            <select name="state" id="status" class="form-control">
               <option value="0">草稿</option>
               <option value="1">已发布</option>
             </select>
@@ -109,70 +120,80 @@
 
   <script src="../assets/vendors/jquery/jquery.js"></script>
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
+  <script src="../assets/vendors/art-template/template-web.js"></script>
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/js/postadd.js"></script>
+
+
+  <script type="text/html" id="categoryTpl">
+  
+  {{each data}}
+  <option value="{{$value._id}}">{{$value.title}}</option>
+  {{/each}}
+
+  </script>
+
+
+  <!--修改页面-->
+  <script type="text/html" id="categoryModifyTpl">
+  
+  <div class="page-title">
+      <h1>修改文章</h1>
+    </div>
+  
+  <form class="row" id="postModifyForm" data-id='{{_id}}'>
+        <div class="col-md-9">
+          <div class="form-group">
+            <label for="title">标题</label>
+            <input value='{{title}}' name="title" id="title" class="form-control input-lg" type="text" placeholder="文章标题">
+          </div>
+          <div class="form-group">
+            <label for="content">内容</label>
+            <textarea name="content" id="content" class="form-control input-lg" cols="30" rows="10" placeholder="内容">{{content}}</textarea>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="feature">文章封面</label>
+            <!-- show when image chose -->
+            <img class="help-block thumbnail" src="{{thumbnail}}" >
+            <input id="feature" class="form-control" type="file" value='{{thumbnail}}'>
+
+            <input value='{{thumbnail}}' type="hidden" name="thumbnail" id="ModifyhiddenImg">
+
+            <!-- ------------------------------------------加入隐藏域-------------------------------------------------------------------- -->
+          </div>
+          <div class="form-group">
+            <label for="category">所属分类</label>
+            <select name="category" id="category" class="form-control">
+              
+            {{each categories}}
+            <option {{$value._id == category._id ? 'selected' : ''}} value="{{$value._id}}">{{$value.title}}</option>
+            {{/each}}
+            <!-- ---------------------------------------------截取出来遍历----------------------------------------------------------------- -->
+
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="created">发布时间</label>
+            <input value='{{createAt.split('T')[0]}}' name="createAt" id="created" class="form-control" type="date">
+          </div>
+          <div class="form-group">
+            <label for="status">状态</label>
+            <select name="state" id="status" class="form-control">
+              <option value="0" {{state == 0 ? 'selected' : ''}}>草稿</option>
+              <option value="1" {{state == 1 ? 'selected' : ''}}>已发布</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button class="btn btn-primary" type="submit">修改</button>
+          </div>
+        </div>
+      </form>
+  
+  </script>
+
+
+
 </body>
 </html>
-<script src="../assets/vendors/art-template/template-web.js"></script>
-
-<script type="text/html" id="categoryTpl">
-
-{{each data}}
-  <option value="{{$value._id}}">{{$value.title}}</option>
-{{/each}}
-
-</script>
-
-<script>
-//实现分类显示
-$.ajax({
-  type:'get',//get或post
-  url:'/categories',//请求的地址
-  data:{},//如果不需要传，则注释掉 请求的参数，a=1&b=2或{a:1,b:2}或者jq中的serialize方法，或者formData收集
-  dataType:'json',
-  success:function(result){//成功的回调函数
-    var html = template('categoryTpl',{data:result});
-    $('#category').html(html)
-  }
-})
-
-
-//实现图片上传及预览
-$('#feature').on('change',function () {
-  // console.dir(this);
-  var formData = new FormData();
-  formData.append('avatar',this.files[0])
-  //formData 原生ajax来写
-  //1.不需要写xhr.setRequestHeader
-  //2.二进制的，不需要key=value
-  $.ajax({
-    type:'post',//get或post
-    url:'/upload',//请求的地址
-    contentType:false,
-    processData:false,
-    data:formData,//如果不需要传，则注释掉 请求的参数，a=1&b=2或{a:1,b:2}或者jq中的serialize方法，或者formData收集
-    dataType:'json',
-    success:function(result){//成功的回调函数
-      console.log(result)
-      $('.thumbnail').attr('src',result[0].avatar).show();
-      $('#hiddenImg').val(result[0].avatar)
-    }
-  })
-})
-
-
-//文章上传
-$('#addForm').on('submit',function () {
-  console.log($(this).serialize());
-  var chuang = $(this).serialize()
-  $.ajax({
-    type:'post',//get或post
-    url:'/posts',//请求的地址
-    data:chuang,//如果不需要传，则注释掉 请求的参数，a=1&b=2或{a:1,b:2}或者jq中的serialize方法，或者formData收集
-    dataType:'json',
-    success:function(result){//成功的回调函数
-      location.href = 'posts.html'
-    }
-  })
-  return false;
-})
-
-</script>
